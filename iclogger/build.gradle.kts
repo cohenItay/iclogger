@@ -21,7 +21,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "com.itayc"
             artifactId = "iclogger"
-            version = "1.0"
+            version = "1.1"
             afterEvaluate {
                 from(components["java"])
             }
