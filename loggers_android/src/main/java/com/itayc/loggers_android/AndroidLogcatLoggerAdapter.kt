@@ -1,9 +1,9 @@
-package com.itay.loggers_android
+package com.itayc.loggers_android
 
 import android.util.Log
-import com.itay.iclogger.LogLevel
-import com.itay.iclogger.Logger
-import com.itay.iclogger.appendAttrsToLog
+import com.itayc.iclogger.LogLevel
+import com.itayc.iclogger.Logger
+import com.itayc.iclogger.appendAttrsToLog
 
 class AndroidLogcatLoggerAdapter : Logger {
 

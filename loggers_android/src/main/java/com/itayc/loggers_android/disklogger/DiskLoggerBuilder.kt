@@ -1,9 +1,9 @@
-package com.itay.loggers_android.disklogger
+package com.itayc.loggers_android.disklogger
 
 import android.content.Context
-import com.itay.loggers_android.disklogger.worker.CleanLogsWorker
-import com.itay.loggers_android.disklogger.worker.InitCleanLogWorkerIfNeededUseCase
-import com.itay.loggers_android.disklogger.worker.WorkerFactoryHolder
+import com.itayc.loggers_android.disklogger.worker.CleanLogsWorker
+import com.itayc.loggers_android.disklogger.worker.InitCleanLogWorkerIfNeededUseCase
+import com.itayc.loggers_android.disklogger.worker.WorkerFactoryHolder
 import kotlinx.coroutines.CoroutineDispatcher
 import java.util.Locale
 

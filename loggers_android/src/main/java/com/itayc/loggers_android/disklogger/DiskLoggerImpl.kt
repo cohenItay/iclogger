@@ -1,10 +1,10 @@
-package com.itay.loggers_android.disklogger
+package com.itayc.loggers_android.disklogger
 
 import android.content.Context
 import android.util.Log
-import com.itay.iclogger.LogLevel
-import com.itay.iclogger.appendAttrsToLog
-import com.itay.iclogger.appendLevelTagThrowable
+import com.itayc.iclogger.LogLevel
+import com.itayc.iclogger.appendAttrsToLog
+import com.itayc.iclogger.appendLevelTagThrowable
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

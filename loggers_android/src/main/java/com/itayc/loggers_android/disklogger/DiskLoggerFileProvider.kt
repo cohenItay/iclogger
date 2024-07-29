@@ -1,4 +1,4 @@
-package com.itay.loggers_android.disklogger
+package com.itayc.loggers_android.disklogger
 
 import androidx.core.content.FileProvider
 

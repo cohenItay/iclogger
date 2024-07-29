@@ -1,4 +1,4 @@
-package com.itay.loggers_android.disklogger.worker
+package com.itayc.loggers_android.disklogger.worker
 
 import android.content.Context
 import androidx.work.Constraints

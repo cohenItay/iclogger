@@ -1,7 +1,7 @@
-package com.itay.loggers_android.disklogger
+package com.itayc.loggers_android.disklogger
 
-import com.itay.iclogger.LogLevel
-import com.itay.iclogger.Logger
+import com.itayc.iclogger.LogLevel
+import com.itayc.iclogger.Logger
 import java.util.Date
 
 /**

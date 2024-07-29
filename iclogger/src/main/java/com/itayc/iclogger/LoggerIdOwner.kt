@@ -1,4 +1,4 @@
-package com.itay.iclogger
+package com.itayc.iclogger
 
 interface LoggerIdOwner {
     @Suppress("unused")

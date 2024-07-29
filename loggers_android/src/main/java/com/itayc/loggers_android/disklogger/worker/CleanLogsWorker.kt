@@ -1,11 +1,11 @@
-package com.itay.loggers_android.disklogger.worker
+package com.itayc.loggers_android.disklogger.worker
 
 import android.content.Context
 import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.itay.loggers_android.disklogger.DiskLogger
+import com.itayc.loggers_android.disklogger.DiskLogger
 import java.util.Calendar
 import java.util.Locale
 
