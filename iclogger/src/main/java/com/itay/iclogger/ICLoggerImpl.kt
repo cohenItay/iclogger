@@ -31,3 +31,9 @@ internal class ICLoggerImpl(
         }
     }
 }
+
+fun createIcloggerInstance(
+    consoleLogger: Logger?,
+    isInDebug: Boolean,
+    loggersMap: Map<String, Logger>
+) : ICLogger = ICLoggerImpl(consoleLogger, isInDebug, loggersMap)

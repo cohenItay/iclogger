@@ -22,7 +22,6 @@ publishing {
             groupId = "com.itayc"
             artifactId = "iclogger"
             version = "1.0"
-            //artifact(layout.buildDirectory.file("libs/iclogger.jar"))
             afterEvaluate {
                 from(components["java"])
             }
