@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <files-path
+        name="disk_logs"
+        path="app_logs/"/>
+    <!-- WARNING: please make sure that if this value is being changed, also change the string resource logsDirectoryName in strings.xml-->
+    <!-- Please note to add '/' at the end of Folder which you wish to permit access to all of its content-->
+    <files-path
+        name="logs"
+        path="zip_logs_file/"/>
+</paths>

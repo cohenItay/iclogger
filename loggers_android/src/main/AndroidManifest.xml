@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <provider
+            android:name=".disklogger.DiskLoggerFileProvider"
+            android:authorities="${applicationId}.contentprovider"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            tools:ignore="ExportedContentProvider">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/disk_logger_file_paths"/>
+        </provider>
+    </application>
+</manifest>
