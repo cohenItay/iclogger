@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.itay.loggers_android"
+    namespace = "com.itayc.loggers_android"
     compileSdk = 34
 
     defaultConfig {
