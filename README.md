@@ -7,7 +7,7 @@ Due to my expirience in Android development, one of bottelnecks which I had alon
 Does my classes should be depended on Android SDK? No, it should live and work as long it is in Kotlin/Java.
 
 The problem comes from `Log.x` belongs to the `android.util` SDK which creates a strong dependency between the business/domain layer classes and the android SDK. 
-Thinking about it in a broader way that is true for any logger which is not owned by the business. 
+Thinking about it in a broader way that is true for any logger which is not owned by the business layer (you). 
 
 #### what problems does it solves? 
 1. Separation from interacting (directly) with 3rd party loggers
