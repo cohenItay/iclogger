@@ -16,8 +16,8 @@ Thinking about it in a broader way that is true for any logger which is not owne
 ## How to use? 
 first we need to add the library into our project, it is a maven package and can be added to your `.pom` file or using gradle:
 ```
-implementation("com.itayc:iclogger:1.1") // the core files
-implementation("com.itayc:iclogger-android-loggers:1.1") // extra logger implementations for android platform
+implementation("com.itayc:iclogger:1.1.1") // the core files
+implementation("com.itayc:iclogger-android-loggers:1.1.1") // extra logger implementations for android platform
 ```
 
 Once added you will have a the possibility to create an instance of `ICLogger`
