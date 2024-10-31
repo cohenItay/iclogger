@@ -4,7 +4,7 @@ fun String?.appendLevelTagThrowable(
     logLevel: LogLevel,
     tag: String,
     throwable: Throwable? = null
-) = "${logLevel.tag}/$tag: ${this ?: ""} ${throwable?.let {"\t$it"} ?: ""}"
+) = "${logLevel.tag}/${String.format("%.35s", tag)}: ${this ?: ""} ${throwable?.let {"\t$it"} ?: ""}"
 
 fun String.appendAttrsToLog(
     attributes: Map<String, Any?>? = null

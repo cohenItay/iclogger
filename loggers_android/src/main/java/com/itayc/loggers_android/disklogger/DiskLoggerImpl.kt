@@ -34,7 +34,7 @@ internal class DiskLoggerImpl(
 ) : DiskLogger {
 
     private val tag = DiskLogger::class.simpleName!!
-    private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
+    private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault(Locale.Category.FORMAT))
     private var bufferWriter: BufferedWriter? = null
     private val loggerScope = CoroutineScope(dispatcherIo + SupervisorJob())
     private val channel = Channel<Operation>()
@@ -55,9 +55,12 @@ internal class DiskLoggerImpl(
     }
 
     override fun log(tag: String, logLevel: LogLevel, message: String, throwable: Throwable?, attributes: Map<String, Any?>?) {
+        val time = timeFormat.format(Calendar.getInstance().time)
+        val threadInfo = String.format("%.30s", Thread.currentThread().name)
         val logContent = message
             .appendAttrsToLog(attributes)
             .appendLevelTagThrowable(LogLevel.INFO, tag, throwable)
+            .let { "$threadInfo $time $it" }
         loggerScope.launch {
             // Working with the channel makes the communications between the coroutines sequential
             // and thus works like a queue
@@ -112,12 +115,10 @@ internal class DiskLoggerImpl(
      */
     private suspend fun processWriteLog(logContent: String) = withContext(Dispatchers.IO) {
         val writer = validateWriterIsReady() ?: return@withContext
-        val time = timeFormat.format(Calendar.getInstance().time)
-        val log = "${Thread.currentThread().name} $time $logContent\n"
         try {
-            writer.write(log)
+            writer.write("$logContent\n")
         } catch (e: IOException) {
-            Log.e(tag, "couldn't write the log: '$log'", e)
+            Log.e(tag, "couldn't write the log: '$logContent'", e)
         }
         closeBufferJob?.cancelAndJoin()
         closeBufferJob = createCloseBufferJob()
