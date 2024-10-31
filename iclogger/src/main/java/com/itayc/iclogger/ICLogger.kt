@@ -9,6 +9,11 @@ interface ICLogger {
     val consoleLogger: Logger?
 
     /**
+     * Whether logs are enabled or not. this can be useful to disable the logs on release
+     */
+    var enableLogs: Boolean
+
+    /**
      * Info log
      * @param tag - The tag of the log
      * @param log - The message of the log
