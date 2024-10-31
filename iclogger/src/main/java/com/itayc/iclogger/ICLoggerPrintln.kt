@@ -13,6 +13,8 @@ class ICLoggerPrintln : ICLogger {
     override val consoleLogger: Logger
         get() = systemLogger
 
+    override var enableLogs: Boolean = true
+
     override fun log(
         tag: String,
         level: LogLevel,
