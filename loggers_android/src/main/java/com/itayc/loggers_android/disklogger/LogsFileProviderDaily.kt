@@ -10,6 +10,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.util.TimeZone
 
 /**
  * Provide the the directory and the file for the logs to be written to as long as we are in the same day.
@@ -17,21 +18,20 @@ import java.util.Locale
  * @param locale - the [Locale] required.
  */
 class LogsFileProviderDaily(
-    private val locale: Locale
+    private val locale: Locale,
+    private val timeZone: TimeZone
 ) : LogsFileProvider {
 
     private val TAG = LogsFileProvider::class.simpleName!!
-    private val folderNameFormat = SimpleDateFormat("dd_MM_yyyy", locale)
-
-    init {
-        // If the client has decided to use this file provider we will instantiate the
+    private val folderNameFormat = SimpleDateFormat("dd_MM_yyyy", locale).also {
+        it.timeZone = timeZone
     }
 
     override suspend fun provideLogsDirectory(appContext: Context) =
         File(("${appContext.filesDir}/logs"))
 
     override suspend fun provideFile(appContext: Context): File? {
-        val fileName = folderNameFormat.format(Calendar.getInstance(locale).time)
+        val fileName = folderNameFormat.format(Calendar.getInstance(timeZone, locale).time)
         return getFileForToday(appContext, fileName)
     }
 

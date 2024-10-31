@@ -25,16 +25,19 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 internal class DiskLoggerImpl(
     private val appContext: Context,
     private val logsFileProvider: LogsFileProvider,
-    private val dispatcherIo: CoroutineDispatcher
+    private val dispatcherIo: CoroutineDispatcher,
+    locale: Locale,
+    timeZone: TimeZone
 ) : DiskLogger {
 
     private val tag = DiskLogger::class.simpleName!!
-    private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault(Locale.Category.FORMAT))
+    private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", locale).also { it.timeZone = timeZone }
     private var bufferWriter: BufferedWriter? = null
     private val loggerScope = CoroutineScope(dispatcherIo + SupervisorJob())
     private val channel = Channel<Operation>()

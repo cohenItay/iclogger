@@ -6,6 +6,7 @@ import com.itayc.loggers_android.disklogger.worker.InitCleanLogWorkerIfNeededUse
 import com.itayc.loggers_android.disklogger.worker.WorkerFactoryHolder
 import kotlinx.coroutines.CoroutineDispatcher
 import java.util.Locale
+import java.util.TimeZone
 
 // The focal point of where the client would build an instance of the [DiskLogger]
 /**
@@ -30,16 +31,23 @@ class DiskLoggerBuilder {
     var keepLogsPeriod: Int? = null
 
     /**
-     * Sets the locale which affect the time of log file separation
+     * Sets the locale which might affect the time format of log file separation
      */
     var locale: Locale = Locale.getDefault()
+
+    /**
+     * Sets the time zone which affect the time of logs and log files naming
+     */
+    var timeZone: TimeZone = TimeZone.getDefault()
 
 
 
     private fun build(appContext: Context, dispatcherIo: CoroutineDispatcher) = DiskLoggerImpl(
         appContext = appContext,
-        logsFileProvider = fileProvider ?: LogsFileProviderDaily(locale),
-        dispatcherIo = dispatcherIo
+        logsFileProvider = fileProvider ?: LogsFileProviderDaily(locale, timeZone),
+        dispatcherIo = dispatcherIo,
+        locale = locale,
+        timeZone = timeZone
     ).also { diskLogger ->
         instantiateCleanWorkerIfNeeded(appContext, diskLogger)
     }
