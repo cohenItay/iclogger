@@ -8,10 +8,17 @@ interface ICLogger {
      */
     val consoleLogger: Logger?
 
+    
     /**
-     * Whether logs are enabled or not. this can be useful to disable the logs on release
+     * Determines whether logging is allowed.
+     *
+     * This property controls if various logging messages should be emitted by the system.
+     * When set to [AllowLogs.Yes], logs will be generated. When set to [AllowLogs.No], logging will be suppressed.
+     * The specific types of logs affected by this setting depend on the implementation of `AllowLogs`.
+     *
+     * @see AllowLogs
      */
-    var enableLogs: Boolean
+    var allowLogs: AllowLogs
 
     /**
      * Info log

@@ -36,7 +36,6 @@ internal class DiskLoggerImpl(
     timeZone: TimeZone
 ) : DiskLogger {
 
-    private val tag = DiskLogger::class.simpleName!!
     private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", locale).also { it.timeZone = timeZone }
     private var bufferWriter: BufferedWriter? = null
     private val loggerScope = CoroutineScope(dispatcherIo + SupervisorJob())
@@ -108,7 +107,7 @@ internal class DiskLoggerImpl(
         }
         filesToDelete.forEach { file ->
             if (!file.delete()) {
-                Log.e(tag, "processCleanLogs: Was not able to delete file ${file.name}")
+                Log.e(TAG, "processCleanLogs: Was not able to delete file ${file.name}")
             }
         }
     }
@@ -119,9 +118,10 @@ internal class DiskLoggerImpl(
     private suspend fun processWriteLog(logContent: String) = withContext(Dispatchers.IO) {
         val writer = validateWriterIsReady() ?: return@withContext
         try {
+            Log.d(TAG, logContent)
             writer.write("$logContent\n")
         } catch (e: IOException) {
-            Log.e(tag, "couldn't write the log: '$logContent'", e)
+            Log.e(TAG, "couldn't write the log: '$logContent'", e)
         }
         closeBufferJob?.cancelAndJoin()
         closeBufferJob = createCloseBufferJob()
@@ -135,7 +135,7 @@ internal class DiskLoggerImpl(
             try {
                 bufferWriter = BufferedWriter(FileWriter(file, true))
             } catch (e: IOException) {
-                Log.e(tag, "$file, is a directory rather then a file", e)
+                Log.e(TAG, "$file, is a directory rather then a file", e)
                 bufferWriter?.close()
             }
             bufferWriter!!
@@ -157,5 +157,9 @@ internal class DiskLoggerImpl(
     private sealed class Operation {
         data class Write(val logContent: String) : Operation()
         data class Delete(val from: Date) : Operation()
+    }
+
+    companion object {
+        private const val TAG = "DiskLoggerImpl"
     }
 }

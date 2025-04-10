@@ -3,9 +3,20 @@ package com.itayc.iclogger
 @Suppress("unused")
 internal class ICLoggerImpl(
     override val consoleLogger: Logger?,
-    override var enableLogs: Boolean,
+    allowLogsInitial: AllowLogs,
     private val loggersMap: Map<String, Logger>
 ) : ICLogger {
+
+    private var allowedLevel:LogLevel? = null
+
+    override var allowLogs: AllowLogs = allowLogsInitial
+        set(value) {
+            field = value
+            allowedLevel = when (value) {
+                is AllowLogs.No -> null
+                is AllowLogs.Yes -> value.level
+            }
+        }
 
     override fun log(
         tag: String,
@@ -15,7 +26,8 @@ internal class ICLoggerImpl(
         attributes: Map<String, Any?>?,
         vararg extraLoggers: LoggerIdOwner
     ) {
-        if (enableLogs) {
+        val allowedLevel = this.allowedLevel ?: return
+        if (level >= allowedLevel) {
             val (extra, _) = extraLoggers.partition { loggersMap.containsKey(it.id) }
             consoleLogger?.log(tag, level, message, throwable, attributes)
             extra.forEach { loggerId ->
@@ -32,8 +44,8 @@ internal class ICLoggerImpl(
 }
 
 @Suppress("unused")
-fun createIcloggerInstance(
+fun createIcLoggerInstance(
     consoleLogger: Logger?,
-    enableLogs: Boolean,
+    allowLogsInitial: AllowLogs,
     loggersMap: Map<String, Logger>
-) : ICLogger = ICLoggerImpl(consoleLogger, enableLogs, loggersMap)
+) : ICLogger = ICLoggerImpl(consoleLogger, allowLogsInitial, loggersMap)
