@@ -8,11 +8,14 @@ import com.itayc.iclogger.appendLevelTagThrowable
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.onSuccess
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -74,12 +77,15 @@ internal class DiskLoggerImpl(
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     override fun flushToDiskBlocking() {
         runBlocking {
-            CompletableDeferred(Unit).also {
-                channel.send(Operation.Flush(it))
-                it.await()
-            }
+            val deferred = CompletableDeferred(Unit)
+            channel
+                .trySend(Operation.Flush(deferred))
+                .onSuccess {
+                    deferred.await()
+                }
         }
     }
 
