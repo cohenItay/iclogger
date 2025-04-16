@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/iclogger" />
             <option value="$PROJECT_DIR$/loggers_android" />
+            <option value="$PROJECT_DIR$/myapplication" />
           </set>
         </option>
       </GradleProjectSettings>

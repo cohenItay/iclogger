@@ -23,3 +23,4 @@ rootProject.name = "ICLogger"
 include(":app")
 include(":iclogger")
 include(":loggers_android")
+include(":myapplication")
