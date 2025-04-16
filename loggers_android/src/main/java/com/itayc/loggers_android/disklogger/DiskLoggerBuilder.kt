@@ -40,16 +40,28 @@ class DiskLoggerBuilder {
      */
     var timeZone: TimeZone = TimeZone.getDefault()
 
+    /**
+     * Lets this logger automatically catch exceptions and write them into the file before crashing
+     */
+    var catchCrashes: Boolean = true
 
 
-    private fun build(appContext: Context, dispatcherIo: CoroutineDispatcher) = DiskLoggerImpl(
-        appContext = appContext,
-        logsFileProvider = fileProvider ?: LogsFileProviderDaily(locale, timeZone),
-        dispatcherIo = dispatcherIo,
-        locale = locale,
-        timeZone = timeZone
-    ).also { diskLogger ->
-        instantiateCleanWorkerIfNeeded(appContext, diskLogger)
+
+    private fun build(appContext: Context, dispatcherIo: CoroutineDispatcher): DiskLoggerImpl {
+        return DiskLoggerImpl(
+            appContext = appContext,
+            logsFileProvider = fileProvider ?: LogsFileProviderDaily(locale, timeZone),
+            dispatcherIo = dispatcherIo,
+            locale = locale,
+            timeZone = timeZone
+        ).also { diskLogger ->
+            instantiateCleanWorkerIfNeeded(appContext, diskLogger)
+            if (catchCrashes) {
+                Thread.setDefaultUncaughtExceptionHandler(
+                    UncaughtCrashHandlerDisk(diskLogger)
+                )
+            }
+        }
     }
 
     private fun instantiateCleanWorkerIfNeeded(appContext: Context, diskLogger: DiskLoggerImpl) {

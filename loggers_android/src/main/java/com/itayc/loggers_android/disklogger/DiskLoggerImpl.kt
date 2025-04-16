@@ -61,7 +61,7 @@ internal class DiskLoggerImpl(
         val threadInfo = String.format("%.30s", Thread.currentThread().name)
         val logContent = message
             .appendAttrsToLog(attributes)
-            .appendLevelTagThrowable(LogLevel.INFO, tag, throwable)
+            .appendLevelTagThrowable(logLevel, tag, throwable)
             .let { "$threadInfo $time $it" }
         loggerScope.launch {
             // Working with the channel makes the communications between the coroutines sequential

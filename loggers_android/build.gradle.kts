@@ -48,7 +48,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "com.itayc"
             artifactId = "iclogger-android-loggers"
-            version = "1.2"
+            version = "1.3"
             afterEvaluate {
                 from(components["release"])
             }
