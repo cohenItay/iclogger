@@ -74,6 +74,15 @@ internal class DiskLoggerImpl(
         }
     }
 
+    override fun flushToDiskBlocking() {
+        runBlocking {
+            CompletableDeferred(Unit).also {
+                channel.send(Operation.Flush(it))
+                it.await()
+            }
+        }
+    }
+
     override fun releaseResources() {
         flushToDiskBlocking()
         channel.close()
@@ -157,15 +166,6 @@ internal class DiskLoggerImpl(
         runCatching {
             bufferWriter?.close()
             bufferWriter = null
-        }
-    }
-
-    private fun flushToDiskBlocking() {
-        runBlocking {
-            CompletableDeferred(Unit).also {
-                channel.send(Operation.Flush(it))
-                it.await()
-            }
         }
     }
 

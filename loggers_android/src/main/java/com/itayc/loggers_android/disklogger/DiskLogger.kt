@@ -23,4 +23,12 @@ interface DiskLogger : Logger {
      * @throws IllegalStateException if the [from] days is less then 1 day
      */
     fun cleanLogs(from: Date)
+
+    /**
+     * Forces a synchronous flush of any buffered data to disk.
+     *
+     * This function blocks the calling thread until all pending writes have been
+     * committed to the underlying storage. blocking operation.
+     */
+    fun flushToDiskBlocking()
 }
