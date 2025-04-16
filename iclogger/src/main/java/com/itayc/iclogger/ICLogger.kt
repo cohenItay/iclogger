@@ -244,7 +244,7 @@ interface ICLogger {
     /**
      * Release any open resources for the logger
      */
-    suspend fun releaseResources()
+    fun releaseResources() {}
 
     companion object {
 

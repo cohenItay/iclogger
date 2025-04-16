@@ -6,8 +6,6 @@ class ICLoggerPrintln : ICLogger {
         override fun log(tag: String, logLevel: LogLevel, message: String, throwable: Throwable?, attributes: Map<String, Any?>?) {
             println("$tag: $message" + (throwable?.message ?: ""))
         }
-
-        override suspend fun releaseResources() {}
     }
 
     override val consoleLogger: Logger
@@ -24,9 +22,5 @@ class ICLoggerPrintln : ICLogger {
         vararg extraLoggers: LoggerIdOwner
     ) {
         systemLogger.log(tag, level, message, throwable, attributes)
-    }
-
-    override suspend fun releaseResources() {
-
     }
 }

@@ -5,6 +5,7 @@ import android.util.Log
 import com.itayc.iclogger.LogLevel
 import com.itayc.iclogger.appendAttrsToLog
 import com.itayc.iclogger.appendLevelTagThrowable
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,6 +16,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -39,7 +41,7 @@ internal class DiskLoggerImpl(
     private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", locale).also { it.timeZone = timeZone }
     private var bufferWriter: BufferedWriter? = null
     private val loggerScope = CoroutineScope(dispatcherIo + SupervisorJob())
-    private val channel = Channel<Operation>()
+    private val channel = Channel<Operation>(capacity = Channel.UNLIMITED)
     private var closeBufferJob: Job? = null
     private val mutex = Mutex()
 
@@ -51,6 +53,8 @@ internal class DiskLoggerImpl(
                         processWriteLog(op.logContent)
                     is Operation.Delete ->
                         processCleanLogs(op.from)
+                    is Operation.Flush ->
+                        processFlushLogs(op.ack)
                 }
             }
         }
@@ -70,15 +74,10 @@ internal class DiskLoggerImpl(
         }
     }
 
-    override suspend fun flushToDisk() {
-        withContext(dispatcherIo) {
-            @Suppress("BlockingMethodInNonBlockingContext")
-            bufferWriter?.flush()
-        }
-    }
-
-    override suspend fun releaseResources() {
-        flushToDisk()
+    override fun releaseResources() {
+        flushToDiskBlocking()
+        channel.close()
+        closeBuffer()
     }
 
     override fun cleanLogs(from: Date) {
@@ -127,6 +126,11 @@ internal class DiskLoggerImpl(
         closeBufferJob = createCloseBufferJob()
     }
 
+    private fun processFlushLogs(deferred: CompletableDeferred<Unit>) {
+        bufferWriter?.flush()
+        deferred.complete(Unit)
+    }
+
     @Suppress( "BlockingMethodInNonBlockingContext") // This lint is shown for withContext while it should not, bug.
     private suspend fun validateWriterIsReady() : BufferedWriter? = mutex.withLock {
         bufferWriter ?: withContext(dispatcherIo) {
@@ -150,13 +154,25 @@ internal class DiskLoggerImpl(
     }
 
     private fun closeBuffer() {
-        bufferWriter?.close()
-        bufferWriter = null
+        runCatching {
+            bufferWriter?.close()
+            bufferWriter = null
+        }
+    }
+
+    private fun flushToDiskBlocking() {
+        runBlocking {
+            CompletableDeferred(Unit).also {
+                channel.send(Operation.Flush(it))
+                it.await()
+            }
+        }
     }
 
     private sealed class Operation {
         data class Write(val logContent: String) : Operation()
         data class Delete(val from: Date) : Operation()
+        data class Flush(val ack: CompletableDeferred<Unit>) : Operation()
     }
 
     companion object {

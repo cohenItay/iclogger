@@ -16,6 +16,4 @@ class AndroidLogcatLoggerAdapter : Logger {
             LogLevel.WARNING -> Log.w(tag, withAttr, throwable)
         }
     }
-
-    override suspend fun releaseResources() {}
 }

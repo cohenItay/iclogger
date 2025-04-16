@@ -36,13 +36,42 @@ internal class ICLoggerImpl(
         }
     }
 
-    override suspend fun releaseResources() {
+    override fun releaseResources() {
         loggersMap.values.forEach {
             it.releaseResources()
         }
     }
 }
 
+
+/**
+ * Creates an instance of the ICLogger interface.
+ *
+ * This function initializes and returns a concrete implementation of the ICLogger,
+ * which is used for logging within the system. It allows for configuring the logger
+ * with an optional console logger, initial log filtering rules, and a map of
+ * named loggers.
+ *
+ * @param consoleLogger An optional Logger instance to which log messages will
+ * also be directed. If null, no console logging will occur.
+ * This is useful for capturing logs in standard output/error streams.
+ * @param allowLogsInitial An instance of AllowLogs, defining the initial set of
+ * rules for filtering log messages. This determines which
+ * log levels and categories are initially allowed. can be modified later on.
+ * @param loggersMap A map where keys are logger ids (String) and values are
+ * corresponding Logger instances. This allows logs to be
+ * directed to specific, named loggers.
+ * Note that the key for this loggers map is equivalent to your [LoggerIdOwner.id]
+ * Example:
+ * ```
+ * object DiskLoggerId : LoggerIdOwner {
+ *     override val id: String = "com.example.disk.id"
+ * }
+ * // then you can call
+ * icLogger.i(TAG, "log message", ..., DiskLoggerId)
+ * ```
+ * @return An instance of ICLogger, configured with the provided parameters.
+ */
 @Suppress("unused")
 fun createIcLoggerInstance(
     consoleLogger: Logger?,

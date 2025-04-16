@@ -11,7 +11,7 @@ interface Logger {
     )
 
     /**
-     * Release any open resources (if any)
+     * Release any open resources (if any), it might block the thread
      */
-    suspend fun releaseResources()
+    fun releaseResources() {}
 }

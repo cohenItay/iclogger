@@ -2,6 +2,7 @@ package com.itayc.loggers_android.disklogger
 
 import com.itayc.iclogger.LogLevel
 import com.itayc.iclogger.Logger
+import kotlinx.coroutines.CompletableDeferred
 import java.util.Date
 
 /**
@@ -22,9 +23,4 @@ interface DiskLogger : Logger {
      * @throws IllegalStateException if the [from] days is less then 1 day
      */
     fun cleanLogs(from: Date)
-
-    /**
-     * Flush any pending logs into the disk if there are any
-     */
-    suspend fun flushToDisk()
 }

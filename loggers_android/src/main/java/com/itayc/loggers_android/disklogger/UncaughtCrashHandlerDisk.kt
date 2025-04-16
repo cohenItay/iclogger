@@ -24,7 +24,7 @@ internal class UncaughtCrashHandlerDisk(private val diskLogger: DiskLogger) : Th
             throwable = null,
             attributes = null
         )
-
+        diskLogger.releaseResources()
         // Always pass it on to the default handler (to let system crash the app)
         defaultHandler?.uncaughtException(thread, throwable)
     }
