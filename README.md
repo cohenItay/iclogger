@@ -22,15 +22,19 @@ implementation("com.itayc:iclogger-android-loggers:1.2") // extra logger impleme
 
 Once added you will have a the possibility to create an instance of `ICLogger`
 ```
-val iclogger = createIcloggerInstance(
-  consoleLogger: Logger?,
-  isInDebug: Boolean,
-  loggersMap: Map<String, Logger>
-)
+val icLogger = createIcLoggerInstance(
+            consoleLogger = AndroidLogcatLoggerAdapter(),
+            allowLogsInitial = AllowLogs.Yes(LogLevel.DEBUG),
+            loggersMap = mapOf(
+                "id" to DiskLoggerBuilder.buildWith(applicationContext, Dispatchers.IO) {  } // Android orientated logger
+            )
+        )
+        icLogger.d("TAG", "test")
+        throw RuntimeException("Test crash") // will be logged into the disk logger
 ```
 * The `consoleLogger` will be the logger which prints the logs onto the terminal window of your system,
 for Android it would be the logcat, you can use the `AndroidLogcatLoggerAdapter()` from the `android-loggers` lib.
-* `isInDebug` basically enabled / disables the logger - once off debug mode don't log anything.
+* `allowLogsInitial` basically enabled / disables the logger with the desired logging level.
 * `loggersMap` are pairs of id-to-logger, the id identifies the logger itself. those extra loggers will be logging the log in addition to the `consoleLogger`
 
 #### Play time
