@@ -20,6 +20,5 @@ class App: Application() {
             )
         )
         icLogger.d("TAG", "test")
-        throw RuntimeException("Test crash")
     }
 }

@@ -7,16 +7,7 @@ internal class ICLoggerImpl(
     private val loggersMap: Map<String, Logger>
 ) : ICLogger {
 
-    private var allowedLevel:LogLevel? = null
-
     override var allowLogs: AllowLogs = allowLogsInitial
-        set(value) {
-            field = value
-            allowedLevel = when (value) {
-                is AllowLogs.No -> null
-                is AllowLogs.Yes -> value.level
-            }
-        }
 
     override fun log(
         tag: String,
@@ -26,7 +17,7 @@ internal class ICLoggerImpl(
         attributes: Map<String, Any?>?,
         vararg extraLoggers: LoggerIdOwner
     ) {
-        val allowedLevel = this.allowedLevel ?: return
+        val allowedLevel = allowLogs.getLogLevelOrNull() ?: return
         if (level >= allowedLevel) {
             val (extra, _) = extraLoggers.partition { loggersMap.containsKey(it.id) }
             consoleLogger?.log(tag, level, message, throwable, attributes)
@@ -40,6 +31,11 @@ internal class ICLoggerImpl(
         loggersMap.values.forEach {
             it.releaseResources()
         }
+    }
+
+    private fun AllowLogs.getLogLevelOrNull() = when (this) {
+        is AllowLogs.No -> null
+        is AllowLogs.Yes -> level
     }
 }
 
