@@ -8,21 +8,16 @@ internal class UncaughtCrashHandlerDisk(private val diskLogger: DiskLogger) : Th
     private val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
 
     override fun uncaughtException(thread: Thread, throwable: Throwable) {
-        diskLogger.log(
-            tag = "Crash",
-            logLevel = LogLevel.ERROR,
-            message = buildString {
+        (diskLogger as? ImmediateLogging)?.immediateWriteLog(
+            buildString {
                 appendLine("=== Crash Detected ===")
                 appendLine("Thread: ${thread.name}")
-                appendLine("Time: ${System.currentTimeMillis()}")
                 appendLine("Exception: ${throwable::class.java.name}")
                 appendLine("Message: ${throwable.message}")
                 appendLine("Stacktrace:")
                 appendLine(Log.getStackTraceString(throwable))
                 appendLine("======================")
-            },
-            throwable = null,
-            attributes = null
+            }
         )
         diskLogger.releaseResources()
         // Always pass it on to the default handler (to let system crash the app)

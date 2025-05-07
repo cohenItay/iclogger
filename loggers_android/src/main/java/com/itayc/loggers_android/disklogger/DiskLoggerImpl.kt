@@ -8,15 +8,19 @@ import com.itayc.iclogger.appendLevelTagThrowable
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onSuccess
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -26,6 +30,7 @@ import kotlinx.coroutines.withContext
 import java.io.BufferedWriter
 import java.io.FileWriter
 import java.io.IOException
+import java.io.Writer
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -39,21 +44,21 @@ internal class DiskLoggerImpl(
     private val dispatcherIo: CoroutineDispatcher,
     locale: Locale,
     timeZone: TimeZone
-) : DiskLogger {
+) : DiskLogger, ImmediateLogging {
 
     private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", locale).also { it.timeZone = timeZone }
-    private var bufferWriter: BufferedWriter? = null
+    private var bufferWriter: Writer? = null
     private val loggerScope = CoroutineScope(dispatcherIo + SupervisorJob())
     private val channel = Channel<Operation>(capacity = Channel.UNLIMITED)
     private var closeBufferJob: Job? = null
-    private val mutex = Mutex()
+    private val writeMutex = Mutex()
 
     init {
         loggerScope.launch {
             for (op in channel) {
                 when (op) {
                     is Operation.Write ->
-                        processWriteLog(op.logContent)
+                        processWriteLogDispatched(op.logContent)
                     is Operation.Delete ->
                         processCleanLogs(op.from)
                     is Operation.Flush ->
@@ -74,6 +79,12 @@ internal class DiskLoggerImpl(
             // Working with the channel makes the communications between the coroutines sequential
             // and thus works like a queue
             channel.send(Operation.Write(logContent))
+        }
+    }
+
+    override fun immediateWriteLog(logContent: String) {
+        loggerScope.launch(start = CoroutineStart.UNDISPATCHED, context = NonCancellable) {
+            processWriteLog(logContent = logContent, flush = true)
         }
     }
 
@@ -129,11 +140,17 @@ internal class DiskLoggerImpl(
     /**
      * Process the log, which is write it to the disk.
      */
-    private suspend fun processWriteLog(logContent: String) = withContext(Dispatchers.IO) {
-        val writer = validateWriterIsReady() ?: return@withContext
+    private suspend fun processWriteLogDispatched(logContent: String) = withContext(Dispatchers.IO) {
+        processWriteLog(logContent)
+    }
+
+    private suspend fun processWriteLog(logContent: String, flush: Boolean = false) = writeMutex.withLock {
+        val writer = validateWriterIsReady() ?: return@withLock
+        currentCoroutineContext().ensureActive()
         try {
-            Log.d(TAG, logContent)
             writer.write("$logContent\n")
+            if (flush)
+                writer.flush()
         } catch (e: IOException) {
             Log.e(TAG, "couldn't write the log: '$logContent'", e)
         }
@@ -141,28 +158,29 @@ internal class DiskLoggerImpl(
         closeBufferJob = createCloseBufferJob()
     }
 
+
     private fun processFlushLogs(deferred: CompletableDeferred<Unit>) {
         bufferWriter?.flush()
         deferred.complete(Unit)
     }
 
     @Suppress( "BlockingMethodInNonBlockingContext") // This lint is shown for withContext while it should not, bug.
-    private suspend fun validateWriterIsReady() : BufferedWriter? = mutex.withLock {
+    private suspend fun validateWriterIsReady() : Writer? =
         bufferWriter ?: withContext(dispatcherIo) {
+            ensureActive()
             val file = logsFileProvider.provideFile(appContext)
                 ?: return@withContext null
             try {
-                bufferWriter = BufferedWriter(FileWriter(file, true))
+                bufferWriter = FileWriter(file, true)
             } catch (e: IOException) {
                 Log.e(TAG, "$file, is a directory rather then a file", e)
                 bufferWriter?.close()
             }
             bufferWriter!!
         }
-    }
 
     private fun createCloseBufferJob() = loggerScope.launch(Dispatchers.IO) {
-        delay(2 * 60 * 1_000L) // 2 minutes
+        delay(10 * 60 * 1_000L) // 10 minutes
         if (isActive) {
             closeBuffer()
         }
