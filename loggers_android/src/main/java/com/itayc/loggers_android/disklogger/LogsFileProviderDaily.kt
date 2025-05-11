@@ -16,19 +16,22 @@ import java.util.TimeZone
  * Provide the the directory and the file for the logs to be written to as long as we are in the same day.
  * day is defined by the [locale] being sent
  * @param locale - the [Locale] required.
+ * @param relativePath write the logs into .../logs/<your_relative_path>, null when will use the log directory
  */
 class LogsFileProviderDaily(
     private val locale: Locale,
-    private val timeZone: TimeZone
+    private val timeZone: TimeZone,
+    relativePath: String? = null
 ) : LogsFileProvider {
 
     private val TAG = LogsFileProvider::class.simpleName!!
     private val folderNameFormat = SimpleDateFormat("dd_MM_yyyy", locale).also {
         it.timeZone = timeZone
     }
+    private val logsRelativeDir = "/logs/${relativePath?.trim('/', ' ')}"
 
     override suspend fun provideLogsDirectory(appContext: Context) =
-        File(("${appContext.filesDir}/logs"))
+        File(("${appContext.filesDir}$logsRelativeDir"))
 
     override suspend fun provideFile(appContext: Context): File? {
         val fileName = folderNameFormat.format(Calendar.getInstance(timeZone, locale).time)
