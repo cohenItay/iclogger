@@ -28,7 +28,13 @@ class LogsFileProviderDaily(
     private val folderNameFormat = SimpleDateFormat("dd_MM_yyyy", locale).also {
         it.timeZone = timeZone
     }
-    private val logsRelativeDir = "/logs/${relativePath?.trim('/', ' ')}"
+    private val logsRelativeDir = buildString {
+        append("/logs")
+        relativePath?.let {
+            val noSlashes = it.trim('/', ' ')
+            append("/$noSlashes")
+        }
+    }
 
     override suspend fun provideLogsDirectory(appContext: Context) =
         File(("${appContext.filesDir}$logsRelativeDir"))
