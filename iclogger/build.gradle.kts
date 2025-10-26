@@ -33,7 +33,7 @@ publishing {
             from(components["kotlin"]) // in regular kotlin lib it doesn't need to be inside afterEvaluate
             groupId = "com.itayc"
             artifactId = "iclogger"
-            version = "1.5"
+            version = "1.6"
             artifact(tasks.named("sourcesJar").get())
         }
     }
