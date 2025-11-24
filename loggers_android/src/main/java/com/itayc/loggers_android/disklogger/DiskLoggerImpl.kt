@@ -15,7 +15,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onSuccess
 import kotlinx.coroutines.currentCoroutineContext
@@ -27,7 +26,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.io.BufferedWriter
 import java.io.FileWriter
 import java.io.IOException
 import java.io.Writer
@@ -51,7 +49,7 @@ internal class DiskLoggerImpl(
     private val loggerScope = CoroutineScope(dispatcherIo + SupervisorJob())
     private val channel = Channel<Operation>(capacity = Channel.UNLIMITED)
     private var closeBufferJob: Job? = null
-    private val writeMutex = Mutex()
+    private val writerMutex = Mutex()
 
     init {
         loggerScope.launch {
@@ -103,7 +101,7 @@ internal class DiskLoggerImpl(
     override fun releaseResources() {
         flushToDiskBlocking()
         channel.close()
-        closeBuffer()
+        runBlocking { closeBuffer() }
     }
 
     override fun cleanLogs(from: Date) {
@@ -144,7 +142,7 @@ internal class DiskLoggerImpl(
         processWriteLog(logContent)
     }
 
-    private suspend fun processWriteLog(logContent: String, flush: Boolean = false) = writeMutex.withLock {
+    private suspend fun processWriteLog(logContent: String, flush: Boolean = false) = writerMutex.withLock {
         val writer = validateWriterIsReady() ?: return@withLock
         currentCoroutineContext().ensureActive()
         try {
@@ -154,13 +152,17 @@ internal class DiskLoggerImpl(
         } catch (e: IOException) {
             Log.e(TAG, "couldn't write the log: '$logContent'", e)
         }
-        closeBufferJob?.cancelAndJoin()
+        closeBufferJob?.cancel()
         closeBufferJob = createCloseBufferJob()
     }
 
 
-    private fun processFlushLogs(deferred: CompletableDeferred<Unit>) {
-        bufferWriter?.flush()
+    private suspend fun processFlushLogs(deferred: CompletableDeferred<Unit>) = writerMutex.withLock {
+        try {
+            bufferWriter?.flush()
+        } catch (e: IOException) {
+            Log.w(TAG, "Failed to flush logs", e)
+        }
         deferred.complete(Unit)
     }
 
@@ -186,7 +188,7 @@ internal class DiskLoggerImpl(
         }
     }
 
-    private fun closeBuffer() {
+    private suspend fun closeBuffer() = writerMutex.withLock {
         runCatching {
             bufferWriter?.close()
             bufferWriter = null
